@@ -4,25 +4,56 @@ var CONFIG = require('./config');
 
 var onlineUsers = 0;
 
+var allSockets = [];
+
 var server = net.createServer(function (socket) {
   //same as socket.on('connection', callback);
   onlineUsers++;
-  console.log('A new user has entered the chat room. Current users online: ' + onlineUsers);
-
   socket.setEncoding('utf8');
 
-  //handles incoming data to server
+  //add conencted clients to array of all sockets
+  allSockets.push(socket);
+
+  //display on server
+  console.log(socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
+
+  //send to connected clients
+  for (var i = 0; i < allSockets.length; i++) {
+    if (allSockets[i] === socket){ //send to client who has connected
+      socket.write('Welcome to the chatroom: ' +  socket.remoteAddress + ':' + socket.remotePort + '. Current users online: ' + onlineUsers);
+    }else{ //send to other connected clients
+      allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
+    }
+  }
+
+  //handles incoming data from client
   socket.on('data', function (chunk) {
-    //writes to server console and remove extra line break
+    //writes to server console
     console.log('SERVER BCAST FROM: ' + socket.remoteAddress + ':' + socket.remotePort + ': ' + chunk);
-    //send data that has been received to client
-    socket.write(socket.remoteAddress + ':' + socket.remotePort + ': ' + chunk);
+    //send data that has been received back to client
+    for (var i = 0; i < allSockets.length; i++) {
+      if (allSockets[i] === socket){ //for client that sent the message
+        socket.write('YOU: ' + chunk);
+      }else{ //send to other connected clients
+        allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ': ' + chunk);
+      }
+    }
   });
 
   //when client leaves the server
   socket.on('end', function () {
     onlineUsers--;
-    console.log('A user has left the chat room. Current users online: ' + onlineUsers);
+    //display on server
+    console.log(socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
+
+    //remove client from array
+    var remove = allSockets.indexOf(socket);
+    allSockets.splice(remove, 1);
+
+    //send to remaining connected clients else
+    for (var i = 0; i < allSockets.length; i++) {
+      allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
+    }
   });
 });
 

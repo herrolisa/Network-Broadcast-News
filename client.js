@@ -8,7 +8,7 @@ socket.setEncoding('utf8');
 
 var client = socket.connect({port: CONFIG.PORT}, function () {
   //writes to client console upon connection
-  console.log('Welcome to the chatroom: ' + client.localAddress + ':' + client.localPort);
+  console.log('You are connected!');
 });
 
 //1. when client console receives user input
