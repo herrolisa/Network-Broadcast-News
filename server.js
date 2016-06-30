@@ -33,7 +33,7 @@ var server = net.createServer(function (socket) {
     //check that socket does not have username property
     if (!socket.username){
       //if username already exists in allUsernames array or user wants to be ADMIN/admin
-      if (allUsernames.indexOf(chunk) !== -1 || chunk.toLowerCase() === 'ADMIN'){
+      if (allUsernames.indexOf(chunk) !== -1 || chunk.toLowerCase() === 'admin'){
         socket.write('[ADMIN]: That name is taken! Choose another: ');
       }else{
         allUsernames.push(chunk); //add username to allUsernames array
@@ -46,7 +46,8 @@ var server = net.createServer(function (socket) {
       //send data that has been received back to client
       for (var i = 0; i < allSockets.length; i++) {
         if (allSockets[i] === socket){ //for client that sent the message
-          socket.write('[YOU]: ' + chunk);
+          // socket.write('[YOU]: ' + chunk);
+          continue;
         }else{ //send to other connected clients
           allSockets[i].write('[' + socket.username + ']: ' + chunk);
         }
