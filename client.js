@@ -22,3 +22,7 @@ client.on('data', function(chunk) {
   //prints incoming data from server
   console.log(chunk);
 });
+
+client.on('error', function (error) {
+  console.log(error);
+});
