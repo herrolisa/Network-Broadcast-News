@@ -87,19 +87,30 @@ server.on('error', function (error) {
 
 //add admin broadcast: when server console receieves input, broadcast to all connected sockets
 process.stdin.on('data', function (chunk) {
-  //kicking a user based on username
-  if (chunk.indexOf('\\kick') !== -1){
-    var remove = chunk.slice(6).toString().trim();
-    allSockets.forEach(function(socket){
-      if (socket.username === remove){
-        socket.write('You\'ve been booted! Bye!');
-        socket.end();
-      }
-    });
+  //kicking a user based on port number
+  var chunkString = chunk.toString('utf8');
+  if (chunkString.indexOf('\\kick') !== -1){
+    var regex = chunkString.match(/:\d+/);
+    if (regex !== null){
+      var port = parseInt(regex[0].toString().slice(1));
+      allSockets.forEach(function(socket){
+        if (socket.remotePort === port){
+          socket.write('You\'ve been booted! Bye!');
+          socket.end();
+        }
+      });
+    }else{ //kicking a user based on username
+      var remove = chunkString.slice(6).trim();
+      allSockets.forEach(function(socket){
+        if (socket.username === remove){
+          socket.write('You\'ve been booted! Bye!');
+          socket.end();
+        }
+      });
+    }
   }else{
     for (var i = 0; i < allSockets.length; i++) {
       allSockets[i].write('[ADMIN]: ' + chunk.toString().trim());
     }
   }
 });
-
