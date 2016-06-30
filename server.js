@@ -15,27 +15,27 @@ var server = net.createServer(function (socket) {
   allSockets.push(socket);
 
   //display on server
-  console.log(socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
+  console.log(socket.remoteAddress.slice(7) + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
 
   //send to connected clients
   for (var i = 0; i < allSockets.length; i++) {
     if (allSockets[i] === socket){ //send to client who has connected
-      socket.write('[ADMIN]: Welcome to the chatroom: ' +  socket.remoteAddress + ':' + socket.remotePort + '. Current users online: ' + onlineUsers);
+      socket.write('[ADMIN]: Welcome to the chatroom: ' +  socket.remoteAddress.slice(7) + ':' + socket.remotePort + '. Current users online: ' + onlineUsers);
     }else{ //send to other connected clients
-      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
+      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress.slice(7) + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
     }
   }
 
   //handles incoming data from client
   socket.on('data', function (chunk) {
     //writes to server console
-    console.log('SERVER BCAST FROM: ' + socket.remoteAddress + ':' + socket.remotePort + ': ' + chunk);
+    console.log('SERVER BCAST FROM: ' + socket.remoteAddress.slice(7) + ':' + socket.remotePort + ': ' + chunk);
     //send data that has been received back to client
     for (var i = 0; i < allSockets.length; i++) {
       if (allSockets[i] === socket){ //for client that sent the message
         socket.write('YOU: ' + chunk);
       }else{ //send to other connected clients
-        allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ': ' + chunk);
+        allSockets[i].write(socket.remoteAddress.slice(7) + ':' + socket.remotePort + ': ' + chunk);
       }
     }
   });
@@ -44,7 +44,7 @@ var server = net.createServer(function (socket) {
   socket.on('end', function () {
     onlineUsers--;
     //display on server
-    console.log(socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
+    console.log(socket.remoteAddress.slice(7) + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
 
     //remove client from array
     var remove = allSockets.indexOf(socket);
@@ -52,7 +52,7 @@ var server = net.createServer(function (socket) {
 
     //send to remaining connected clients else
     for (var i = 0; i < allSockets.length; i++) {
-      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
+      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress.slice(7) + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
     }
   });
 });
