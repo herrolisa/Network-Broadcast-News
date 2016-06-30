@@ -20,9 +20,9 @@ var server = net.createServer(function (socket) {
   //send to connected clients
   for (var i = 0; i < allSockets.length; i++) {
     if (allSockets[i] === socket){ //send to client who has connected
-      socket.write('Welcome to the chatroom: ' +  socket.remoteAddress + ':' + socket.remotePort + '. Current users online: ' + onlineUsers);
+      socket.write('[ADMIN]: Welcome to the chatroom: ' +  socket.remoteAddress + ':' + socket.remotePort + '. Current users online: ' + onlineUsers);
     }else{ //send to other connected clients
-      allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
+      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress + ':' + socket.remotePort + ' has entered the chat room. Current users online: ' + onlineUsers);
     }
   }
 
@@ -52,7 +52,7 @@ var server = net.createServer(function (socket) {
 
     //send to remaining connected clients else
     for (var i = 0; i < allSockets.length; i++) {
-      allSockets[i].write(socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
+      allSockets[i].write('[ADMIN]: ' + socket.remoteAddress + ':' + socket.remotePort + ' has left the chat room. Current users online: ' + onlineUsers);
     }
   });
 });
@@ -64,4 +64,11 @@ server.listen(CONFIG.PORT, function () {
 
 server.on('error', function (error) {
   console.log(error);
+});
+
+//add admin broadcast: when server console receieves input, broadcast to all connected sockets
+process.stdin.on('data', function (chunk) {
+  for (var i = 0; i < allSockets.length; i++) {
+    allSockets[i].write('[ADMIN]: ' + chunk.toString().trim());
+  }
 });
