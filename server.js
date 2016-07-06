@@ -41,15 +41,43 @@ var server = net.createServer(function (socket) {
         socket.write('[ADMIN]: A fine name! You shall now be known as: ' +  socket.username);
       }
     }else{
-      //writes to server console
-      console.log('[' + socket.username + ']: ' + chunk);
-      //send data that has been received back to client
-      for (var i = 0; i < allSockets.length; i++) {
-        if (allSockets[i] === socket){ //for client that sent the message
-          // socket.write('[YOU]: ' + chunk);
-          continue;
-        }else{ //send to other connected clients
-          allSockets[i].write('[' + socket.username + ']: ' + chunk);
+      //if 'writes' property does not exist on socket object, create it
+      if (!socket.writes){
+        socket.writes = [];
+      }
+      //add a 'timestamp' to socket.writes array
+      socket.writes.push(Date.now());
+
+      //check if there has been more than one message sent from socket
+      if(socket.writes.length > 1){
+        if (socket.writes.length/((socket.writes[socket.writes.length - 1] - socket.writes[0])/1000) > 3 ){
+          socket.write('Thought we wouldn\'t catch you, huh? Buhbye!');
+          socket.end();
+        }else{
+          //writes to server console
+          console.log('[' + socket.username + ']: ' + chunk);
+          //send data that has been received back to client
+          for (var i = 0; i < allSockets.length; i++) {
+            if (allSockets[i] === socket){ //for client that sent the message
+              // socket.write('[YOU]: ' + chunk);
+              continue;
+            }else{ //send to other connected clients
+              allSockets[i].write('[' + socket.username + ']: ' + chunk);
+            }
+          }
+        }
+      }else{
+        //socket is sending a message for the first time (does not include creating username)
+        //writes to server console
+        console.log('[' + socket.username + ']: ' + chunk);
+        //send data that has been received back to client
+        for (var i = 0; i < allSockets.length; i++) {
+          if (allSockets[i] === socket){ //for client that sent the message
+            // socket.write('[YOU]: ' + chunk);
+            continue;
+          }else{ //send to other connected clients
+            allSockets[i].write('[' + socket.username + ']: ' + chunk);
+          }
         }
       }
     }
